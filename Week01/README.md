@@ -215,9 +215,9 @@ healthCheck 可以做什么 ？
 
 **CAP原理**
 
-C: consistency, 一致性，每次总是能够读到最近写入的数据或者失败
-A: available, 每次请求都能读到数据
-P: partition tolerance 分区容忍,不管任意个消息由于网络原因失败,系统都能能够继续工作
+- C: consistency, 一致性，每次总是能够读到最近写入的数据或者失败
+- A: available, 每次请求都能读到数据
+- P: partition tolerance 分区容忍,不管任意个消息由于网络原因失败,系统都能能够继续工作
 
 CAP原理中，P是必须满足的，C 和A 可以根据业务需要选择，要么是CP系统，要么是AP系统
 
