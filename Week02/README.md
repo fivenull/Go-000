@@ -392,3 +392,345 @@ func IsTemporary(err error) bool {
 ```
 
 以上这几种姿势，其实各有各的用处，不同的场景，选择可能也不同，需要根据实际场景实际分析。
+
+
+###  一个error 技巧使用例子
+
+先看一段代码，相信这段代码如果很多人实现的时候也都是这个样子：
+
+
+```
+type Header struct {
+    Key, Value string
+}
+
+type Status struct {
+    Code    int
+    Reason string
+}
+
+func WriteResponse(w io.Writer, st Status, headers []Header, body io.Reader) error {
+    
+    _, err := fmt.Fprintf(w, "HTTP/1.1 %d %s\r\n", st.Code, st.Reason)
+    if err != nil {
+        return err
+    }
+    
+    for _, h := range headers {
+        _, err := fmt.Fprintf(w, "%s:%s\r\n", h.Key, h.Value)
+        if err != nil {
+            return err
+        }
+    }
+    
+    if _, err := fmt.Fprint(w, "\r\n"); err != nil {
+        return err
+    }
+    
+    _, err = io.Copy(w, body)
+    return err
+}
+```
+看这段代码时候估计很多就开始吐嘈go的error的处理，感觉代码中会存在很多err的判断处理，其实这里是可以写的更优雅一点的，上面的姿势不对，来换个姿势：
+
+```
+type errWriter struct {
+    io.Writer
+    err error
+}
+
+func(e *errWriter) Write(buf []byte) (int, error) {
+    if e.err != nil {
+        return 0, e.err
+    }
+    
+    var n int
+    n, e.err = e.Writer.Write(buf)
+    return n,nil
+}
+
+func WriteResponse(w io.Writer, st Status, headers []Header, body io.Reader) error {
+    ew :=&errWriter{Writer:w}
+    fmt.Fprintf(ew, "HTTP/1.1 %d %s\r\n", st.Code, st.Reason)
+    
+    for _, h := range headers {
+        fmt.Fprintf(ew, "%s:%s\r\n", h.Key, h.Value)
+    }
+    
+    fmt.Fprint(w, "\r\n")
+    
+    io.Copy(w, body)
+    return ew.err
+}
+```
+
+对比之下这种代码看起来是不是就非常简洁，所有很多时候可能是自己写代码的姿势不对，而不是go的error设计的不好。
+
+## Wrap errors
+
+就像下面这段代码一样，这样的使用方式，我自己在工程代码中也经常看到，这样就会导致生成的错误没有`file:line`信息,没有导致错误的调用堆栈信息，如果出现异常就非常不方便排查到底是哪里导致的问题，其次因为这里通过`fmt.Errorf`对错误进行了包装，也就破坏了原始错误。
+
+```
+func AuthenticateReuest(r *Request) error {
+	err := authenticate(r.User)
+	if err != nil {
+		return fmt.Errorf("authenticate failed:%v", err)
+	}
+	return nil
+}
+```
+
+关于error的处理中还有一个非常重要的地方就是是否是每次出现`err!=nil`的时候，我们都需要打印日志？ 如果这样做了，你会发现到处在打印日志，还有很多地方可能打印的是相同的日志。
+
+```
+func WriteAll(w io.Writer, buf[]byte) error {
+	_, err := w.Write(buf)
+	if err != nil {
+		log.Println("unalbe to write:",err)  //这里记录了日志
+		return err                           //将日志进行上抛给调用者
+	}
+	return nil
+}
+
+func WriteConfig(w io.Writer, conf *Config) error {
+    buf, err := json.Marshal(conf)
+    if err != nil {
+        log.Printf("cound not marshal config:%v", err)
+        return err
+    }
+    if err := WriteAll(w, buf); err != nil {
+        log.Println("cound not write config:%v",err)
+        return err
+    }
+    return nil
+}
+```
+在上面这个例子中, 这个错误逐层返回给调用者，如果处理不好，可能就像上面这个例子，每次都打印日志，一直到程序的顶部
+所以：error应该只被处理一次。
+Go中错误的处理契约规定：在出现错误的情况下，不能对其他返回值的内容做任何假设,如下代码中，由于json序列化失败，buf的内容是未知的，这个时候把损坏的buf传给后续处理逻辑，这样就会导致一些未知的错误发生。
+
+
+```
+func WriteConfig(w io.Writer, conf *Config) error {
+    buf, err := json.Marshal(conf)
+    if err != nil {
+        log.Printf("cound not marshal config:%v", err)
+        // 忘记return
+    }
+    if err := WriteAll(w, buf); err != nil {
+        log.Println("cound not write config:%v",err)
+        return err
+    }
+    return nil
+}
+```
+
+关于错误日志处理的规则：
+- 错误要被日志记录
+- 应用程序处理错误，保证100%的完整性
+- 之后不再报告当前错误
+
+`github.com/pkg/errors` 这个error处理包非常受欢迎，看一下这个包对错误的处理例子：
+
+
+```
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+
+	"github.com/pkg/errors"
+)
+
+func ReadFile(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, errors.Wrap(err, "open failed")
+	}
+	defer f.Close()
+	buf, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, errors.Wrap(err, "read failed")
+	}
+	return buf, nil
+}
+
+func ReadConfig() ([]byte, error) {
+	home := os.Getenv("HOME")
+	config, err := ReadFile(filepath.Join(home, ".settings.xml"))
+	return config, errors.WithMessage(err, "cound not read config")
+}
+
+func main() {
+	_, err := ReadConfig()
+	if err != nil {
+		fmt.Printf("original err:%T %v\n", errors.Cause(err), errors.Cause(err))
+		fmt.Printf("stack trace:\n %+v\n",err)  // %+v 可以在打印的时候打印完整的堆栈信息
+		os.Exit(1)
+	}
+}
+
+```
+
+执行结果如下：
+
+
+```
+original err:*os.PathError open /Users/zhaofan/.settings.xml: no such file or directory
+stack trace:
+ open /Users/zhaofan/.settings.xml: no such file or directory
+open failed
+main.ReadFile
+        /Users/zhaofan/open_source_study/test_code/202012/wrap_errors/main.go:15
+main.ReadConfig
+        /Users/zhaofan/open_source_study/test_code/202012/wrap_errors/main.go:27
+main.main
+        /Users/zhaofan/open_source_study/test_code/202012/wrap_errors/main.go:32
+runtime.main
+        /Users/zhaofan/app/go/src/runtime/proc.go:204
+runtime.goexit
+        /Users/zhaofan/app/go/src/runtime/asm_amd64.s:1374
+cound not read config
+exit status 1
+```
+
+从代码上也非常简洁，处理的非常优雅，最终不管是错误信息还是堆栈信息，还可以添加自定义的上下文，同时也完全满足上面提出的关于错误日志处理的规则。
+关于代码中的`Wrap`源码如下：
+
+```
+// Wrap returns an error annotating err with a stack trace
+// at the point Wrap is called, and the supplied message.
+// If err is nil, Wrap returns nil.
+func Wrap(err error, message string) error {
+	if err == nil {
+		return nil
+	}
+	err = &withMessage{
+		cause: err,
+		msg:   message,
+	}
+	return &withStack{
+		err,
+		callers(),
+	}
+}
+```
+
+可以看到我们每次调用`errors.Wrap`方法的时候都是把我们的错误信息err存入到`withMessage`结构体的cause字段，同时又把包装的`withMessage` 作为err存到`withStack`结构体中，同时`withStack`包含了调用堆栈的信息
+
+```
+type withMessage struct {
+	cause error
+	msg   string
+}
+```
+
+### 关于`github.com/pkg/errors` 使用姿势
+
+- 在**你自己的应用程序**中，使用errors.New或者errors.Errorf返回错误
+- 如果调用其他**包内的函数或者你当前项目里的其他函数**，通常简单的直接返回，即直接`return err`
+- 如果你使用**第三方库如github库，公司的基础库，或者go的基础库**，这个时候应该使用`errors.Wrap`或者`errors.Wrap`f保存堆栈信息，同时添加自定义的上下文信息
+- 直接返回错误，而不是每个错误产生的地方打日志
+- 在程序的顶部或者工作的`goroutine`顶部(请求入口)使用`%+v`把堆栈详情记录
+- 使用`errors.Cause` 获取root error即根因，在进行和`sentinel error`进行等值判定
+- 一旦错误被处理,包括你打印日志，或者降级处理等，这个时候你就不应该再向上抛出err，而应该return nil.
+
+
+## go1.13 中的errors
+
+go 1.13 为errors和fmt标准库引入了新的特性，以简化处理包含其他错误的错误。其中最重要的就是：包含一个错误的error可以实现返回底层错误的Unwrap 方法。如果e1.Unwrap() 返回e2, 那么e1就包装了e2,就可以展开e1以获取e2
+
+在Go的1.13 中`fmt.Errorf`支持新的`%w` ，这样就在错误信息中带入原始的信息,这样既保证了人阅读的方便，也方便了机器处理，如：
+
+
+```
+if err != nil {
+    return fmt.Errorf("access denied %w", ErrrPermission)
+}
+```
+
+把之前的例子进行调整如下：
+
+```
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+
+	"errors"
+)
+
+
+func ReadFile(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("open failed: %w", err)
+	}
+
+	defer f.Close()
+	buf, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, fmt.Errorf("read failed: %w", err)
+	}
+	return buf, nil
+}
+
+
+func ReadConfig() ([]byte, error) {
+	home := os.Getenv("HOME")
+	config, err := ReadFile(filepath.Join(home, ".settings.xml"))
+	return config, fmt.Errorf("cound not read config: %w", err)
+}
+
+func main() {
+	_, err := ReadConfig()
+	if err != nil {
+		// errors.Is会一层一层的展开，找最内层的err
+		fmt.Println(errors.Is(err, os.ErrNotExist))
+		os.Exit(1)
+	}
+}
+
+```
+
+但是1.13的errors有个非常大的问题就是不支持携带堆栈信息，所以最好的办法就是把标准库中的`errors`和`github.com/pkg/errors`
+
+
+```
+package main
+
+import (
+	"errors"
+	"fmt"
+
+	xerrors "github.com/pkg/errors"
+)
+
+var errMy = errors.New("My Error")
+
+func test0() error {
+	return xerrors.Wrapf(errMy, "test0 failed")
+}
+
+func test1() error {
+	return test0()
+}
+
+func test2() error {
+	return test1()
+}
+
+func main() {
+	err := test2()
+	fmt.Printf("main: %+v\n", err)
+	fmt.Println(errors.Is(err, errMy))
+}
+```
+
+其实原则就是我们底层的错误还是通过 `github.com/pkg/errors` 中`Wrapf` 进行包装。并且这个时候也完全兼容标准库中的errors，可以使用`errors.Is` 和 `errors.As`方法做判断处理
