@@ -13,25 +13,30 @@ import (
 )
 
 func main() {
-	done := make(chan error, 1)
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP)
+	g, ctx := errgroup.WithContext(context.Background())
+
 	// 用于控制server shutdown
 	stop := make(chan struct{})
-	g := new(errgroup.Group)
 	g.Go(func() error {
 		return serverApp(stop)
 	})
-	go func() {
-		done <- g.Wait()
-	}()
 
-	select {
-	case sig := <-sc:
-		log.Printf("receive signal %s", sig.String())
-		close(stop)
-	case err := <-done:
-		log.Printf("serverApp error: %v", err)
+	g.Go(func() error {
+		sc := make(chan os.Signal, 1)
+		signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGHUP)
+		for {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case sig := <-sc:
+				log.Printf("receive signal %s", sig.String())
+				close(stop)
+				return nil
+			}
+		}
+	})
+	if err := g.Wait(); err != nil {
+		log.Printf("errgroup wait error:%v", err)
 	}
 
 	log.Println("server exiting.....")
@@ -43,12 +48,12 @@ func serverApp(stop <-chan struct{}) error {
 		fmt.Println(rw, "Hello Golang")
 	})
 	s := http.Server{
-		Addr:    "0.0.0.0:5454",
+		Addr:    "0.0.0.0:5455",
 		Handler: mux,
 	}
 	go func() {
 		<-stop
-		s.Shutdown(context.Background())
+		s.Shutdown(context.TODO())
 	}()
 	return s.ListenAndServe()
 }
