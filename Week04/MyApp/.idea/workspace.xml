@@ -2,21 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="42d34004-e4ef-4890-a5fb-08c0a18083fb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/internal/app/api/a_article.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/api/api.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/biz/b_article.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/biz/biz.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/data/d_article.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/data/model.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/ent_orm.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/injector.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/pkg/ginx/ginx.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/router/a_api.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/router/router.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/web.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/internal/app/wire.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pkg/errors/errors.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pkg/errors/response.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/MyApp/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/MyApp/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/configs/config.toml" beforeDir="false" afterPath="$PROJECT_DIR$/configs/config.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +38,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="DatabaseDriversLRU" value="mysql&#10;mariadb" />
     <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
