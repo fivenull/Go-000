@@ -1,0 +1,22 @@
+
+[HTTP]
+# http监听地址
+Host = "0.0.0.0"
+# http监听端口
+Port = 10090
+# http优雅关闭等待超时时长(单位秒)
+ShutdownTimeout = 30
+
+[MySQL]
+# 连接地址
+Host = "10.211.55.3"
+# 连接端口
+Port= 3306
+# 用户名
+User = "root"
+# 密码
+Password = "123456"
+# 数据库
+DBName = "myapp"
+# 连接参数
+Parameters = "charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true"

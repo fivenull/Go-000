@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="42d34004-e4ef-4890-a5fb-08c0a18083fb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/internal/app/api/a_article.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/api/api.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/biz/b_article.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/biz/biz.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/data/d_article.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/data/model.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/ent_orm.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/injector.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/pkg/ginx/ginx.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/router/a_api.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/router/router.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/web.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/internal/app/wire.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pkg/errors/errors.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pkg/errors/response.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="GOROOT" url="file://$USER_HOME$/app/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="c3g6pgav" />
+  </component>
+  <component name="ProjectId" id="1ljZLbM7GIeGthRAlLbNoVhC1jt" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="settings.editor.selected.configurable" value="go.vgo" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/internal/app" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+    <environment>
+      <map>
+        <entry key="GOPROXY" value="https://goproxy.cn,direct" />
+      </map>
+    </environment>
+  </component>
+</project>
